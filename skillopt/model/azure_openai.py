@@ -106,6 +106,28 @@ TARGET_DEPLOYMENT = os.environ.get("TARGET_DEPLOYMENT", "gpt-4o")
 
 REASONING_EFFORT: str | None = None
 
+# 第三方 LLM 兼容：通过 SKILLOPT_EXTRA_BODY 环境变量传递额外参数
+# 格式为 JSON 字符串，例如: {"thinking": {"type": "disabled"}}
+_EXTRA_BODY: dict | None = None
+
+
+def _load_extra_body() -> dict | None:
+    """加载 SKILLOPT_EXTRA_BODY 环境变量（JSON），缓存结果。"""
+    global _EXTRA_BODY
+    if _EXTRA_BODY is not None:
+        return _EXTRA_BODY
+    raw = os.environ.get("SKILLOPT_EXTRA_BODY", "").strip()
+    if not raw:
+        _EXTRA_BODY = {}
+        return None
+    try:
+        _EXTRA_BODY = json.loads(raw)
+    except json.JSONDecodeError:
+        _EXTRA_BODY = {}
+        return None
+    return _EXTRA_BODY or None
+
+
 _AZ_CLI_TOKEN_CACHE: dict[str, dict[str, Any]] = {}
 
 # Deployments that require Responses API
@@ -412,6 +434,11 @@ def _chat_impl(
                     kwargs["reasoning_effort"] = actual_effort
                 if timeout is not None:
                     kwargs["timeout"] = timeout
+                # 第三方 LLM 兼容：通过 SKILLOPT_EXTRA_BODY 环境变量传递额外参数
+                # 例如 Litellm 代理需要 {"thinking": {"type": "disabled"}}
+                _extra = _load_extra_body()
+                if _extra:
+                    kwargs["extra_body"] = _extra
                 resp = client.chat.completions.create(**kwargs)
                 text = resp.choices[0].message.content or ""
                 if resp.usage:

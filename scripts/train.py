@@ -93,6 +93,11 @@ def _register_builtins() -> None:
         _ENV_REGISTRY["swebench"] = SWEBenchAdapter
     except ImportError:
         pass
+    try:
+        from skillopt.envs.searchlog_qa.adapter import SearchLogQAAdapter
+        _ENV_REGISTRY["searchlog_qa"] = SearchLogQAAdapter
+    except ImportError:
+        pass
 
 
 def get_adapter(cfg: dict):

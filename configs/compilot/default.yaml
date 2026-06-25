@@ -1,0 +1,14 @@
+# ComPilot Configuration — Agentic Skill Optimization
+# Uses same data as SkillOpt for direct comparison
+
+# ── LLM ────────────────────────────────────────────────────
+model: deepseek-chat
+
+# ── Multi-Run (ComPilot best-of-K) ─────────────────────────
+num_runs: 5            # K independent optimization dialogues
+max_iter: 15           # Max iterations per dialogue
+eval_sample: 8         # Examples to evaluate per iteration
+
+# ── Data (same as SkillOpt searchlog_qa) ───────────────────
+data_dir: data/searchlog_qa
+skill_init: skillopt/envs/searchlog_qa/skills/initial.md
